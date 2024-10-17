@@ -1,7 +1,8 @@
 {
-  "name": "itmo-robertparadise-pt-lab3",
-  "displayName": "ITMO_RobertParadise_PT_Lab3",
+  "name": "structure-generator-by-robhsak",
+  "displayName": "StructureGenerator",
   "description": "Plugin for VScode that creates a project structure",
+  "publisher": "Robshak",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.94.0"
