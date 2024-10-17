@@ -224,4 +224,5 @@ function createTemplate(basePath: string, templatesPath: string, template: strin
 ```
 
 > Шакура Роберт Дмитриевич M3101
+
 > aka Robshak
