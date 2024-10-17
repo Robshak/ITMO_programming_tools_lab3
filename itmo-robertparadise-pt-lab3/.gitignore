@@ -1,4 +1,8 @@
 node_modules/
 .vscode/
+build/
+dist/
 
 package-lock.json
+
+itmo-robertparadise-pt-lab3-0.0.1.vsix

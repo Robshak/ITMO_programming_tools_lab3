@@ -1,71 +1,226 @@
-# itmo-robertparadise-pt-lab3 README
 
-This is the README for your extension "itmo-robertparadise-pt-lab3". After writing up a brief description, we recommend including the following sections.
+# О плагине в целом
+Этот плагин позволяет просто создавать структуру проекта, а так же поддерживает шаблоны.
 
-## Features
+# Инструкция использования
+## Первый шаг
+Вам обязательно потребуется создать файл с названием "**structure.json**", в нём в формате JSON нужно будет выстраивать структуру:
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
++ Для создании обычной папки нужно просто создать объект:
+```json
+// structure.json
+{
+	someObject: {}
+}
+```
 
-For example if there is an image subfolder under your extension project workspace:
++ Папки могут быть вложенными:
+```json
+//structure.json
+{
+	someObject: {
+		a: {},
+		b: {}
+	}
+}
+```
 
-\!\[feature X\]\(images/feature-x.png\)
++ Чтобы создать структуру проекта, необходимо вызвать команду "Generate Project Structure" через меню команд (Ctrl + Shift + P). Либо воспользоваться комбинацией клавиш "ctrl+shift+]".
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
++ При создании элементов с одинаковыми названиями возможно неопределённое поведение.
+## Работа с шаблонами файлов
+Данный плагин поддерживает работу с шаблонами, для этого вам потребуется создать папку с названием "**templates**", все папки и файлы, которые находятся в "**templates**" будут являться шаблонами.
 
-## Requirements
++ Для использования шаблона, в структуре необходимо указать строку с названием шаблона:
+```
+templates
+|
+|-someTemplate.txt
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+```json
+// structure.json
+{
+	"someTemplateObject": "someTemplate.txt"
+}
+```
+Теперь в вашем проекте будет создан файл с именем "**someTemplate.txt**", содержимое которого будет совпадать с файлом из папки "**templates**". Хотя в структуре указан объект с именем "**someTemplateObject**", в проекте будет создан файл с именем шаблона.
 
-## Extension Settings
++ Вы можете использовать специальную конструкцию "(name)" в названии шаблона для того, чтобы задать динамическое имя файлу. Плагин заменит "(name)" на указанное в JSON название:
+```
+templates
+|
+|-(name).txt
+```
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+```json
+// structure.json
+{
+	someTemplateObject: "(name).txt"
+}
+```
+В проекте будет создан файл с именем "**someTemplateObject.txt**", а его содержимое будет таким же, как в файле "**(name).txt**" из папки шаблонов.
 
-For example:
++ Плагин также поддерживает использование конструкции `[...]`, которая позволяет удалять всё, что находится внутри скобок, вместе с самими скобками. Это может пригодиться для создания нескольких версий одного шаблона:
+```
+templates
+|
+|-(name)[a].txt
+|-(name)[b].txt
+```
 
-This extension contributes the following settings:
+```json
+// structure.json
+{
+	someTemplateObject1: "(name)[a].txt",
+	someTemplateObject2: "(name)[b].txt"
+}
+```
+В проекте будут созданы два файла:
+- "**someTemplateObject1.txt**" с содержимым из "**(name)\[a].txt**",
+- "**someTemplateObject2.txt**" с содержимым из "**(name)\[b].txt**".
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
 
-## Known Issues
++ При создании элементов с одинаковыми названиями возможно неопределённое поведение.
+## Работа с шаблонами папок
+Плагин также поддерживает шаблоны для папок. Вы можете создать папку в директории "**templates**", а затем указать её в структуре через JSON. Правила использования конструкций `(name)` и `[...]` работают для папок аналогично файлам. Если в шаблоне папки создаются файлы или другие папки с использованием "(name)", они также будут адаптированы.
+```
+templates
+|
+|-(name)[someFolder]
+||
+||-(name)
+|||
+|||-(name)1[a].txt
+||
+||-(name)2[b].txt
+```
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+```json
+// structure.json
+{
+	Test: "(name)[someFolder]"
+}
+```
 
-## Release Notes
+По итогу будет получена следующая структура проекта: 
+```
+Test
+|
+|-Test
+||
+||-Test1.txt
+|
+|-Test2.txt
+```
+Файл "**Test1.txt**" будет содержать то же самое, что и "**(name)1\[a].txt**", а файл "**Test2.txt**" будет содержать данные из "**(name)2\[b].txt**".
 
-Users appreciate release notes as you update your extension.
+# Обзор кода
++ Функция `activate` отвечает за регистрацию команды, запускающей плагин, и установку путей к файлу "**structure.json**" и папке "**templates**". Она считывает структуру и вызывает функцию создания папок и файлов на основе шаблонов:
+```ts
+export function activate(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('extension.createStructure', () => {
+        const filePath = vscode.workspace.rootPath + '/' + STRUCTURE_FILE;
+        const templatesPath = vscode.workspace.rootPath + '/' + TEMPLATES_FOLDER;
 
-### 1.0.0
+        // Read structure file
+        fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                vscode.window.showErrorMessage('Error reading structure file!');
+                return;
+            }
+            const structure = JSON.parse(data);
+            createFolders(vscode.workspace.rootPath, templatesPath, structure);
+        });
+    });
 
-Initial release of ...
+    context.subscriptions.push(disposable);
+}
+```
 
-### 1.0.1
++ Функция  `createFolders` рекурсивно создаёт папки и шаблоны на основе структуры.
+```ts
+function createFolders(basePath: string | undefined, templatesPath: string, structure: any) {
+    if(!basePath){
+        return;
+    }
 
-Fixed issue #.
+    for(const key in structure) {
+        const value = structure[key];
 
-### 1.1.0
+        if(typeof value === "object") {
+            // If it's no template
+            
+            const folderPath = path.join(basePath, key);
 
-Added features X, Y, and Z.
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath);
+            }
 
----
+            createFolders(folderPath, templatesPath, value);
+        }
 
-## Following extension guidelines
+        else if(typeof value === "string") {
+            // If it's a template
+            
+            if (value === "_") {
+                vscode.window.showErrorMessage(`Error invalid template name "${value}"`);
+                return;
+            }
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+            createTemplate(basePath, templatesPath, value, key);
+        }
+    }
+}
+```
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
++ Функция `createTemplate` рекурсивно создаёт шаблон.
+```ts
+function createTemplate(basePath: string, templatesPath: string, template: string, fileName: string) {
+    fs.readdir(templatesPath, {withFileTypes: true}, (err, objects) => {
+        if (err) {
+            vscode.window.showErrorMessage('Error reading directory:' + err);
+            return;
+        }
 
-## Working with Markdown
+        // Check all objects in the folder
+        for (const obj of objects) {
+            const newTemplatePath = path.join(templatesPath, obj.name);
+            // If template = "_" then we are already in template processing
+            // If template != "_" then we need find given template
+            if (obj.name === template || template === '_') {
+                if (obj.isDirectory()) {
+                    let newPath;
+                    if(template === '_') {
+                        newPath = path.join(basePath, obj.name);    
+                    }
+                    else {
+                        newPath = path.join(basePath, template);
+                    }
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+                    newPath = newPath.replace(/\(name\)/g, fileName);
+                    // remove [...] constructs
+                    newPath = newPath.replace(/\[.*?\]/g, '');
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+                    if (!fs.existsSync(newPath)) {
+                        fs.mkdirSync(newPath);
+                    }
 
-## For more information
+                    createTemplates(newPath, newTemplatePath, '_', fileName);
+                }
+                else {
+                    let finalName = obj.name.replace(/\(name\)/g, fileName);
+                    // remove [...] constructs
+                    finalName = finalName.replace(/\[.*?\]/g, '');
+                    
+                    if (!fs.existsSync(path.join(basePath, finalName))) {
+                        fs.copyFileSync(path.join(templatesPath, obj.name), path.join(basePath, finalName));
+                    }
+                }
+            }
+        }
+    });
+}
+```
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+> Шакура Роберт Дмитриевич M3101
