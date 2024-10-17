@@ -1,8 +1,20 @@
+# Dependencies
 node_modules/
-.vscode/
-build/
-dist/
-
 package-lock.json
 
+# Logs
+*.log
+CHANGELOG.md
+
+# Build
+dist/
+build/
+
+# VS Code settings
+.vscode/
+
+# Environment variables
+.env
+
+# another one
 itmo-robertparadise-pt-lab3-0.0.1.vsix
