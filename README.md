@@ -7,20 +7,20 @@
 Вам обязательно потребуется создать файл с названием "**structure.json**", в нём в формате JSON нужно будет выстраивать структуру:
 
 + Для создании обычной папки нужно просто создать объект:
+**structure.json**
 ```json
-// structure.json
 {
-	someObject: {}
+	"someObject": {}
 }
 ```
 
 + Папки могут быть вложенными:
+**structure.json**
 ```json
-//structure.json
 {
-	someObject: {
-		a: {},
-		b: {}
+	"someObject": {
+		"a": {},
+		"b": {}
 	}
 }
 ```
@@ -38,8 +38,8 @@ templates
 |-someTemplate.txt
 ```
 
+**structure.json**
 ```json
-// structure.json
 {
 	"someTemplateObject": "someTemplate.txt"
 }
@@ -53,10 +53,10 @@ templates
 |-(name).txt
 ```
 
+**structure.json**
 ```json
-// structure.json
 {
-	someTemplateObject: "(name).txt"
+	"someTemplateObject": "(name).txt"
 }
 ```
 В проекте будет создан файл с именем "**someTemplateObject.txt**", а его содержимое будет таким же, как в файле "**(name).txt**" из папки шаблонов.
@@ -69,11 +69,11 @@ templates
 |-(name)[b].txt
 ```
 
+**structure.json**
 ```json
-// structure.json
 {
-	someTemplateObject1: "(name)[a].txt",
-	someTemplateObject2: "(name)[b].txt"
+	"someTemplateObject1": "(name)[a].txt",
+	"someTemplateObject2": "(name)[b].txt"
 }
 ```
 В проекте будут созданы два файла:
@@ -96,10 +96,10 @@ templates
 ||-(name)2[b].txt
 ```
 
+**structure.json**
 ```json
-// structure.json
 {
-	Test: "(name)[someFolder]"
+	"Test": "(name)[someFolder]"
 }
 ```
 
